@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rethinking Risk: How Media Shapes Perception</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 450px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #F4A261, #E76F51);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="bg-gray-100" style="background-color: #f0f2f5;">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-6xl font-black text-[#264653] mb-2">RETHINKING RISK</h1>
+            <p class="text-lg md:text-2xl font-bold text-[#2A9D8F]">How One Story Reshaped a Generation's Fear and Why We Need to Change the Narrative</p>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+            <div class="md:col-span-2 bg-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row items-center">
+                <div class="text-center md:text-left md:w-1/2">
+                    <h2 class="text-2xl font-bold text-[#264653] mb-2">The Spark: A Made-for-TV Movie</h2>
+                    <p class="text-gray-600 mb-4">In 1983, a single television event altered the cultural landscape. The movie <span class="font-bold">'Adam'</span>, based on a tragic true story, was not just a film; it was a catalyst for a profound societal shift in the perception of safety and trust.</p>
+                </div>
+                <div class="text-center md:w-1/2">
+                    <p class="text-6xl md:text-8xl font-black gradient-text">38M</p>
+                    <p class="text-xl font-bold text-[#264653]">Americans Watched on a Single Night</p>
+                    <p class="text-sm text-gray-500">Approximately 1 in 6 people in the USA at the time.</p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-center text-[#264653] mb-4">The American Ripple Effect</h2>
+                <p class="text-gray-600 text-center mb-4">The movie's impact went far beyond its initial viewership, dominating news cycles and sparking national conversations. It created a lasting "ripple effect" that fundamentally changed parenting styles and societal trust for an entire generation.</p>
+                <div class="chart-container">
+                    <canvas id="usImpactChart"></canvas>
+                </div>
+                 <p class="text-center mt-4 text-sm text-gray-700">This visualization represents the estimated percentage of the US adult population whose mindset on child safety and "stranger danger" was significantly altered by the film and its cultural aftermath.</p>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-center text-[#264653] mb-4">A Tale of Two Responses</h2>
+                <p class="text-gray-600 text-center mb-4">While the story's influence was seismic in the United States, its direct impact overseas was minimal. The cultural shift was not universal, highlighting how local events more powerfully shape national consciousness in other countries.</p>
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+                <p class="text-center mt-4 text-sm text-gray-700">This chart compares the estimated percentage of adults whose minds were shifted <span class="font-bold">specifically by the movie 'Adam'</span> in the US versus the UK and Australia, where the film had limited broadcast and cultural resonance.</p>
+            </div>
+
+            <div class="md:col-span-2 bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-center text-[#264653] mb-4">The Consequence: A Legacy of Fear</h2>
+                <p class="text-gray-600 text-center mb-6 max-w-3xl mx-auto">This powerful narrative, amplified by media, created a chain reaction. It inadvertently cultivated a culture of fear, leading to "umbrella parenting" and a generalized distrust of men in public spaces, a bias that lingers today. Our language shifted to imply all men could be unsafe.</p>
+                <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                    <div class="p-4 rounded-lg bg-gray-50 w-full md:w-auto">
+                        <p class="text-4xl">📺</p>
+                        <p class="font-bold text-[#264653]">Cultural Event</p>
+                        <p class="text-sm text-gray-600">The 'Adam' Broadcast</p>
+                    </div>
+                    <div class="text-2xl font-bold text-[#2A9D8F]">→</div>
+                    <div class="p-4 rounded-lg bg-gray-50 w-full md:w-auto">
+                        <p class="text-4xl">📢</p>
+                        <p class="font-bold text-[#264653]">Media Amplification</p>
+                        <p class="text-sm text-gray-600">News & Milk Cartons</p>
+                    </div>
+                    <div class="text-2xl font-bold text-[#2A9D8F]">→</div>
+                    <div class="p-4 rounded-lg bg-gray-50 w-full md:w-auto">
+                        <p class="text-4xl">🧠</p>
+                        <p class="font-bold text-[#264653]">Shifted Mindsets</p>
+                        <p class="text-sm text-gray-600">"Stranger Danger" culture</p>
+                    </div>
+                    <div class="text-2xl font-bold text-[#2A9D8F]">→</div>
+                     <div class="p-4 rounded-lg bg-gray-50 w-full md:w-auto">
+                        <p class="text-4xl">☂️</p>
+                        <p class="font-bold text-[#264653]">Behavioral Change</p>
+                        <p class="text-sm text-gray-600">"Umbrella" Parenting</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 bg-[#264653] rounded-lg shadow-lg p-8 text-center text-white">
+                <h2 class="text-3xl md:text-4xl font-black mb-4" style="color: #E9C46A;">It's Time for a New Narrative.</h2>
+                <p class="text-lg mb-6 max-w-3xl mx-auto">The old story created a bias that doesn't serve us. It's time to challenge a narrative born from a single moment in media history and raise our expectations. The vast majority of men are good men—protectors, providers, and partners.</p>
+                <p class="text-xl font-bold mb-8">We are calling for strong male leaders to stand with us as allies.</p>
+                <div class="bg-white text-[#264653] rounded-lg p-6 max-w-lg mx-auto">
+                    <p class="text-2xl md:text-3xl font-black">Only Together Can We Thrive.</p>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        const tooltipTitleCallback = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                                return label.join(' ');
+                            } else {
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        const usImpactCtx = document.getElementById('usImpactChart').getContext('2d');
+        new Chart(usImpactCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Mindset Shifted (Est.)', 'Rest of Adult Population'],
+                datasets: [{
+                    data: [32.5, 67.5],
+                    backgroundColor: ['#E76F51', '#2A9D8F'],
+                    borderColor: '#ffffff',
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#264653',
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: tooltipTitleCallback.plugins.tooltip
+                }
+            }
+        });
+
+        const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+        new Chart(comparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: ['USA', ['UK &', 'Australia']],
+                datasets: [{
+                    label: 'Estimated Mindset Shift from "Adam" TV Movie (%)',
+                    data: [32.5, 5], 
+                    backgroundColor: ['#F4A261', '#264653'],
+                    borderColor: ['#E76F51', '#2A9D8F'],
+                    borderWidth: 2,
+                    barPercentage: 0.6,
+                    categoryPercentage: 0.7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 45,
+                        title: {
+                            display: true,
+                            text: 'Estimated % of Adult Population',
+                            color: '#264653',
+                            font: {
+                                weight: 'bold'
+                            }
+                        },
+                        ticks: {
+                           color: '#264653'
+                        }
+                    },
+                    y: {
+                       ticks: {
+                           color: '#264653',
+                           font: {
+                               size: 14,
+                               weight: 'bold'
+                           }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: tooltipTitleCallback.plugins.tooltip
+                }
+            }
+        });
+    </script>
+</body>
+</html>
