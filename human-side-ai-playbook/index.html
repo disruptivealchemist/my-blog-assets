@@ -62,24 +62,6 @@
         .accordion-content {
             @apply px-5 py-4 border border-t-0 border-blue-100 bg-white rounded-b-lg;
         }
-        .gemini-tool {
-            @apply bg-white p-6 md:p-8 rounded-lg shadow-lg border border-blue-100 mt-12;
-        }
-        .gemini-textarea {
-            @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow;
-        }
-        .gemini-button {
-            @apply px-6 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed;
-        }
-        .gemini-result {
-            @apply p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg mt-4;
-        }
-        .gemini-error {
-            @apply p-4 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-r-lg mt-4;
-        }
-        .spinner {
-            @apply w-6 h-6 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto;
-        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -270,25 +252,6 @@
                 </div>
 
             </div>
-            
-            <div class="gemini-tool max-w-4xl mx-auto">
-                <h3 class="text-2xl font-bold text-center text-blue-900 mb-4">✨ Practice Your Framing</h3>
-                <p class="text-gray-600 text-center mb-6">
-                    Let's practice Play 4. Describe a new AI feature you're introducing (e.g., "AI to auto-sort support tickets"). We'll help you reframe it to be human-centric, focusing on the *benefit* for your team.
-                </p>
-                <div class="space-y-4">
-                    <textarea id="feature-description" class="gemini-textarea" rows="3" placeholder="Describe the technical feature here..."></textarea>
-                    <button id="reframe-btn" class="gemini-button w-full md:w-auto">
-                        ✨ Reframe for My Team
-                    </button>
-                    <div id="gemini-loading" class="hidden text-center p-4">
-                        <div class="spinner"></div>
-                        <p class="text-sm text-gray-500 mt-2">Thinking...</p>
-                    </div>
-                    <div id="gemini-output" class="hidden"></div>
-                </div>
-            </div>
-            
         </section>
 
         <section id="roadmap" class="pt-20 pb-16 bg-blue-50/50 rounded-lg my-12">
@@ -451,6 +414,72 @@
                 }
             });
 
+
+            const factorsData = {
+                all: {
+                    labels: ['Perceived Usefulness', 'Ease of Use', 'Perceived Threat', 'Transparency', 'Social Proof', 'Framing'],
+                    data: [85, 75, -60, 70, 55, 65],
+                },
+                psychology: {
+                    labels: ['Perceived Usefulness', 'Perceived Threat', 'Automation Bias'],
+                    data: [85, -60, 40],
+                },
+                behavioural: {
+                    labels: ['Ease of Use', 'Default Nudges', 'Social Proof'],
+                    data: [75, 50, 55],
+                },
+                neuro: {
+                    labels: ['Perceived Threat (Amygdala)', 'Trust (PFC)', 'Empathy Response'],
+                    data: [-60, 70, 45],
+                },
+                ads: {
+                    labels: ['Social Proof', 'Framing', 'Brand Halo Effect'],
+                    data: [55, 65, 30],
+                }
+            };
+
+            const factorsCtx = document.getElementById('factorsChart').getContext('2d');
+            const factorsChart = new Chart(factorsCtx, {
+                type: 'bar',
+                data: {
+                    labels: factorsData.all.labels,
+                    datasets: [{
+                        label: 'Impact on Adoption',
+                        data: factorsData.all.data,
+                        backgroundColor: (context) => context.raw >= 0 ? 'rgba(59, 130, 246, 0.7)' : 'rgba(239, 68, 68, 0.7)',
+                        borderColor: (context) => context.raw >= 0 ? 'rgba(59, 130, 246, 1)' : 'rgba(239, 68, 68, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Impact Score: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Impact Score on Adoption (Negative to Positive)' }
+                        }
+                    }
+                }
+            });
+            
+            document.getElementById('factor-filter').addEventListener('change', function() {
+                const filterValue = this.value;
+                factorsChart.data.labels = factorsData[filterValue].labels;
+                factorsChart.data.datasets[0].data = factorsData[filterValue].data;
+                factorsChart.update();
+            });
+
             document.getElementById('accordion-container').addEventListener('click', function(e) {
                 const header = e.target.closest('.accordion-header');
                 if (!header) return;
@@ -585,87 +614,6 @@
             
             updateTabContent('metalworks');
             
-            
-            const reframeBtn = document.getElementById('reframe-btn');
-            const featureDescription = document.getElementById('feature-description');
-            const geminiLoading = document.getElementById('gemini-loading');
-            const geminiOutput = document.getElementById('gemini-output');
-
-            async function fetchWithBackoff(apiUrl, payload, maxRetries = 3) {
-                let delay = 1000;
-                for (let i = 0; i < maxRetries; i++) {
-                    try {
-                        const response = await fetch(apiUrl, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(payload)
-                        });
-
-                        if (response.ok) {
-                            return await response.json();
-                        } else if (response.status === 429 || response.status >= 500) {
-                            await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
-                        } else {
-                            throw new Error(`API request failed with status ${response.status}`);
-                        }
-                    } catch (error) {
-                        if (i === maxRetries - 1) throw error; 
-                        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
-                    }
-                }
-                throw new Error('API request failed after all retries');
-            }
-
-            async function getGeminiFraming(description) {
-                const apiKey = ""; 
-                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-
-                const systemPrompt = "You are an expert copywriter and behavioural consultant, following the principles of the 'Human Side of AI' report. A user will describe a technical AI feature. Your job is to rewrite that description into a human-centric announcement for their team. Focus on the *human benefit* and *value*, not the technical features. Use the 'Co-Pilot' frame (Play 1) and 'Framing' (Play 4) principles. Make it sound supportive, collaborative, and non-threatening. Keep it to one concise paragraph.";
-
-                const payload = {
-                    contents: [{ parts: [{ text: description }] }],
-                    systemInstruction: {
-                        parts: [{ text: systemPrompt }]
-                    },
-                };
-
-                const result = await fetchWithBackoff(apiUrl, payload);
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    return candidate.content.parts[0].text;
-                } else {
-                    console.error("Invalid response from API:", result);
-                    throw new Error("Invalid response from API");
-                }
-            }
-
-            reframeBtn.addEventListener('click', async () => {
-                const description = featureDescription.value;
-                if (!description.trim()) {
-                    geminiOutput.innerHTML = `<div class="gemini-error">Please enter a description first.</div>`;
-                    geminiOutput.classList.remove('hidden');
-                    return;
-                }
-
-                reframeBtn.disabled = true;
-                geminiLoading.classList.remove('hidden');
-                geminiOutput.classList.add('hidden');
-                geminiOutput.innerHTML = '';
-
-                try {
-                    const reframedText = await getGeminiFraming(description);
-                    geminiOutput.innerHTML = `<div class="gemini-result"><p>${reframedText.replace(/\n/g, '<br>')}</p></div>`;
-                } catch (error) {
-                    console.error("Error calling Gemini API:", error);
-                    geminiOutput.innerHTML = `<div class="gemini-error">Sorry, I couldn't generate a suggestion right now. Please try again.</div>`;
-                } finally {
-                    reframeBtn.disabled = false;
-                    geminiLoading.classList.add('hidden');
-                    geminiOutput.classList.remove('hidden');
-                }
-            });
-
         });
     </script>
 </body>
