@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Human Side of AI: An Interactive Playbook</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 
+    Chosen Palette: Calm Harmony (Warm neutrals: bg-stone-50, bg-white; Complimentary blues: text-blue-800, bg-blue-100, border-blue-500; Subtle accent: text-emerald-600)
+    Application Structure Plan: A thematic, single-page dashboard. The flow is designed for an SME leader: 1. Home (Exec Summary), 2. Why It Matters (Business Context), 3. Human Reactions (Core Analysis), 4. Best Practices (Actionable Plays), 5. Roadmap (Implementation Plan), 6. Case Studies (Social Proof). This structure guides the user from high-level insight ("What is this?") to business value ("Why care?"), deep analysis ("How does it work?"), practical actions ("What do I do?"), a timeline ("When do I do it?"), and finally, real-world examples ("Who else has?"). This is more intuitive and actionable than a linear report.
+    Visualization & Content Choices: 
+    - [Section 2] Report Info: SME vs. Large Enterprise AI Adoption. Goal: Compare. Viz/Method: Bar Chart (Chart.js). Interaction: Static chart with tooltips. Justification: Provides immediate, clear context on the market gap/opportunity.
+    - [Section 2] Report Info: Risks/Rewards of human-centric AI. Goal: Inform/Compare. Viz/Method: Toggled Text Content (HTML/JS). Interaction: User clicks "Risk" or "Reward" button to show/hide relevant text blocks. Justification: Presents a balanced view in a compact, interactive format.
+    - [Section 3] Report Info: Factors influencing AI trust/adoption from different scientific fields. Goal: Organize/Analyze. Viz/Method: Dynamic Bar Chart (Chart.js). Interaction: A dropdown menu ("Filter by Perspective") uses JS to update the chart's dataset, showing data for "All Factors," "Psychological," "Behavioural," etc. Justification: Powerfully demonstrates the interdisciplinary nature of the problem and allows user-driven exploration.
+    - [Section 4] Report Info: Best practices for AI implementation. Goal: Inform/Organize. Viz/Method: Interactive Accordion (HTML/JS). Interaction: User clicks a practice (e.g., "Build Trust") to expand/collapse a detail pane with "How-to" and "Why" (linking to the science). Justification: Delivers dense, actionable advice in a clean, non-overwhelming, user-controlled manner.
+    - [Section 5] Report Info: 90-day implementation plan. Goal: Show Change/Process. Viz/Method: Interactive Process Flow (HTML/Tailwind/JS). Interaction: Clicking a "Phase" box highlights it and displays its details (Actions, KPIs) in a dedicated content area below. Justification: Turns a static timeline into an engaging, focused, step-by-step guide.
+    - [Section 6] Report Info: SME Case Studies (MetalWorks, Restaurant, Retail). Goal: Organize/Inform. Viz/Method: Tabbed Content Area (HTML/Tailwind/JS). Interaction: User clicks a tab with the company name to load the Challenge, Solution, Outcome, and Key Insight into a shared content space. Justification: A classic, space-saving, and intuitive way to present multiple, detailed examples.
+    CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
+    -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fdfcfb; 
+        }
+        .nav-link {
+            @apply px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-blue-800 hover:bg-blue-50 transition-colors;
+        }
+        .nav-link.active {
+            @apply text-blue-800 bg-blue-100;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; 
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px; 
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .tab-btn {
+            @apply px-4 py-2 font-medium text-sm rounded-t-lg border-b-2 border-transparent hover:border-blue-500 hover:text-blue-700 text-gray-600;
+        }
+        .tab-btn.active {
+            @apply border-blue-600 text-blue-700;
+        }
+        .phase-box {
+            @apply p-4 bg-white border-2 border-gray-200 rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:border-blue-400 transition-all text-center;
+        }
+        .phase-box.active {
+            @apply border-blue-600 bg-blue-50 shadow-lg;
+        }
+        .accordion-header {
+            @apply flex justify-between items-center w-full px-5 py-4 text-left font-medium text-blue-800 bg-blue-50 rounded-lg hover:bg-blue-100 focus:outline-none transition-colors;
+        }
+        .accordion-content {
+            @apply px-5 py-4 border border-t-0 border-blue-100 bg-white rounded-b-lg;
+        }
+        .gemini-tool {
+            @apply bg-white p-6 md:p-8 rounded-lg shadow-lg border border-blue-100 mt-12;
+        }
+        .gemini-textarea {
+            @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow;
+        }
+        .gemini-button {
+            @apply px-6 py-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed;
+        }
+        .gemini-result {
+            @apply p-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 rounded-r-lg mt-4;
+        }
+        .gemini-error {
+            @apply p-4 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-r-lg mt-4;
+        }
+        .spinner {
+            @apply w-6 h-6 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm border-b border-gray-200">
+        <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex-shrink-0">
+                    <span class="text-lg font-bold text-blue-800">Aimegos AI Playbook</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4" id="nav-menu">
+                        <a href="#home" class="nav-link active">Home</a>
+                        <a href="#why-it-matters" class="nav-link">Why It Matters</a>
+                        <a href="#reactions" class="nav-link">Human Reactions</a>
+                        <a href="#playbook" class="nav-link">The Playbook</a>
+                        <a href="#roadmap" class="nav-link">Roadmap</a>
+                        <a href="#case-studies" class="nav-link">Case Studies</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-blue-800 hover:bg-blue-100 focus:outline-none">
+                        <span class="sr-only">Open main menu</span>
+                        <div class="space-y-1.5">
+                            <span class="block w-6 h-0.5 bg-gray-600"></span>
+                            <span class="block w-6 h-0.5 bg-gray-600"></span>
+                            <span class="block w-6 h-0.5 bg-gray-600"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#home" class="nav-link block text-base">Home</a>
+                <a href="#why-it-matters" class="nav-link block text-base">Why It Matters</a>
+                <a href="#reactions" class="nav-link block text-base">Human Reactions</a>
+                <a href="#playbook" class="nav-link block text-base">The Playbook</a>
+                <a href="#roadmap" class="nav-link block text-base">Roadmap</a>
+                <a href="#case-studies" class="nav-link block text-base">Case Studies</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <section id="home" class="pt-20 pb-16 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-900 mb-4">The Human Side of AI</h1>
+            <p class="text-xl md:text-2xl text-gray-700 mb-10">An Interactive Playbook for SME Leaders</p>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 mb-12">
+                Welcome to your guide for integrating AI into your business. This interactive report, prepared for Aimegos, goes beyond the tech to explore the most critical factor for success: the human element. Discover how insights from behavioural science, psychology, and neuroscience can help you build trust, drive adoption, and unlock real revenue growth.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                    <span class="text-3xl">🤝</span>
+                    <h3 class="text-xl font-semibold text-blue-800 my-2">Trust is Built, Not Coded</h3>
+                    <p class="text-gray-600">Discover why transparency and perceived empathy are more important than algorithmic perfection for team and customer adoption.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                    <span class="text-3xl">🧠</span>
+                    <h3 class="text-xl font-semibold text-blue-800 my-2">AI is Your 'Co-Pilot'</h3>
+                    <p class="text-gray-600">Learn how framing AI as an augmentative 'co-pilot'—not an autonomous 'autopilot'—reduces threat perception and boosts collaboration.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                    <span class="text-3xl">📈</span>
+                    <h3 class="text-xl font-semibold text-blue-800 my-2">Behaviour Drives Adoption</h3>
+                    <p class="text-gray-600">See how simple behavioural 'nudges', inspired by advertising and psychology, can increase AI tool usage by over 40%.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="why-it-matters" class="pt-20 pb-16">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Why the 'Human Side' is Your Biggest Opportunity</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 text-center mb-12">
+                For SMEs, AI isn't just a tech upgrade; it's a human change-management challenge. Understanding the 'why' behind human reactions to AI is the difference between failed investments and transformative growth. This section explores the business case for a human-centric approach.
+            </p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-4 text-center">AI Adoption: SME vs. Large Enterprise</h3>
+                    <div class="chart-container">
+                        <canvas id="adoptionChart"></canvas>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4 text-center">SMEs have a unique opportunity to be agile. While large enterprises get stuck in complex rollouts, SMEs can use human insights to implement AI faster and more effectively, closing the adoption gap.</p>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-6 text-center">The Risk vs. The Reward</h3>
+                    <div class="flex justify-center space-x-4 mb-4">
+                        <button id="risk-btn" class="px-6 py-2 font-semibold text-red-700 bg-red-100 rounded-full hover:bg-red-200 transition">The Risk</button>
+                        <button id="reward-btn" class="px-6 py-2 font-semibold text-emerald-700 bg-emerald-100 rounded-full hover:bg-emerald-200 transition">The Reward</button>
+                    </div>
+                    <div id="risk-content" class="hidden p-4 bg-red-50 rounded-lg">
+                        <h4 class="font-semibold text-red-800 mb-2">Of Ignoring the Human Side:</h4>
+                        <ul class="list-disc list-inside text-red-700 space-y-1">
+                            <li><span class="font-medium">Wasted Investment:</span> Up to 60% of AI tools are underutilized due to user resistance.</li>
+                            <li><span class="font-medium">Damaged Trust:</span> Poorly implemented AI can erode customer and employee trust.</li>
+                            <li><span class="font-medium">Missed Opportunities:</span> Competitors who get the human side right will capture market share.</li>
+                        </ul>
+                    </div>
+                    <div id="reward-content" class="p-4 bg-emerald-50 rounded-lg">
+                        <h4 class="font-semibold text-emerald-800 mb-2">Of a Human-Centric Approach:</h4>
+                        <ul class="list-disc list-inside text-emerald-700 space-y-1">
+                            <li><span class="font-medium">Higher Productivity:</span> Teams that trust their AI 'co-pilot' report up to 30% higher efficiency.</li>
+                            <li><span class="font-medium">Better Engagement:</span> Customers interacting with well-framed AI chatbots report 20% higher satisfaction.</li>
+                            <li><span class="font-medium">Faster Growth:</span> SMEs using AI effectively are 2x as likely to see revenue growth.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="reactions" class="pt-20 pb-16 bg-blue-50/50 rounded-lg my-12">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">How We *Really* React to AI</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 text-center mb-12">
+                Our reactions to AI aren't always logical. They are driven by deep-seated psychological biases, neural pathways, and behavioural patterns. This section breaks down the core factors you must understand to design AI interactions that work *with* human nature, not against it.
+            </p>
+            <div class="bg-white p-6 rounded-lg shadow-lg border border-gray-200">
+                <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4">
+                    <h3 class="text-xl font-semibold text-blue-800 mb-3 sm:mb-0">Key Factors Influencing AI Adoption</h3>
+                    <div class="flex-shrink-0">
+                        <label for="factor-filter" class="text-sm font-medium text-gray-700 mr-2">Filter by:</label>
+                        <select id="factor-filter" class="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm">
+                            <option value="all">All Factors</option>
+                            <option value="psychology">Psychological</option>
+                            <option value="behavioural">Behavioural</option>
+                            <option value="neuro">Neuroscience</option>
+                            <option value="ads">Advertising</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="chart-container" style="height: 450px; max-height: 500px;">
+                    <canvas id="factorsChart"></canvas>
+                </div>
+                <p class="text-sm text-gray-500 mt-4 text-center">Use the filter to see how different scientific fields explain the drivers of adoption. Notice how 'Perceived Threat' (a psychological and neural factor) can completely override 'Usefulness' (a practical factor).</p>
+            </div>
+        </section>
+
+        <section id="playbook" class="pt-20 pb-16">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">The "Aimegos" Playbook: 4 Plays for AI Success</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 text-center mb-12">
+                This section provides concrete strategies for implementing AI successfully, based on the human insights from this report. Use these four "plays" as your starting point for building human-centric AI systems.
+            </p>
+            <div class="space-y-4 max-w-4xl mx-auto" id="accordion-container">
+                
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span><span class="font-bold">Play 1:</span> Frame AI as a 'Co-Pilot', Not 'Autopilot'</span>
+                        <span class="accordion-icon text-xl font-light">+</span>
+                    </button>
+                    <div class="accordion-content hidden">
+                        <p class="mb-2"><span class="font-semibold">How-to:</span> Use language that emphasizes partnership. Instead of "The AI will complete this task," try "The AI can assist you by drafting X." Always give the human final-decision control.</p>
+                        <p><span class="font-semibold">Why it Works (The Science):</span> This framing reduces the 'Perceived Threat' to autonomy and status, (a key <span class="text-emerald-700 font-medium">Neuroscience</span> finding). It engages the user's prefrontal cortex (logical planning) rather than triggering an amygdala-based threat response.</p>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span><span class="font-bold">Play 2:</span> Build Trust Through "Explainable" Transparency</span>
+                        <span class="accordion-icon text-xl font-light">+</span>
+                    </button>
+                    <div class="accordion-content hidden">
+                        <p class="mb-2"><span class="font-semibold">How-to:</span> Don't be a "black box." If an AI makes a recommendation, provide a simple, one-sentence "why." Example: "I suggest this ad copy because it highlights [Benefit] which resonated with [Audience]."</p>
+                        <p><span class="font-semibold">Why it Works (The Science):</span> Transparency directly counters 'Automation Bias' (a <span class="text-emerald-700 font-medium">Psychological</span> trap where humans over-trust or under-trust AI). It builds trust by making the AI's "thinking" predictable and understandable.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span><span class="font-bold">Play 3:</span> Use 'Behavioural Nudges' to Guide Adoption</span>
+                        <span class="accordion-icon text-xl font-light">+</span>
+                    </button>
+                    <div class="accordion-content hidden">
+                        <p class="mb-2"><span class="font-semibold">How-to:</span> Use smart defaults and timely suggestions. A "smart reply" suggestion in an email client is a perfect nudge. It doesn't force, but it makes the desired action (using the AI) the path of least resistance.</p>
+                        <p><span class="font-semibold">Why it Works (The Science):</span> This leverages 'Dual-Process Theory' (a <span class="text-emerald-700 font-medium">Behavioural Science</span> principle). Nudges appeal to our fast, intuitive "System 1" thinking, making adoption feel easy and natural rather than a "System 2" chore.</p>
+                    </div>
+                </div>
+                
+                <div class="accordion-item">
+                    <button class="accordion-header">
+                        <span><span class="font-bold">Play 4:</span> Leverage 'Framing' and 'Social Proof'</span>
+                        <span class="accordion-icon text-xl font-light">+</span>
+                    </button>
+                    <div class="accordion-content hidden">
+                        <p class="mb-2"><span class="font-semibold">How-to:</span> How you *present* the AI matters more than what it does. Frame it around the *human benefit*, not the *tech feature*. Showcase testimonials from internal team members ("Sarah in sales saved 5 hours this week using...").</p>
+                        <p><span class="font-semibold">Why it Works (The Science):</span> This uses two classic <span class="text-emerald-700 font-medium">Advertising</span> principles. 'Framing' highlights the positive, and 'Social Proof' signals to others that the tool is safe and effective to use, reducing the perceived risk of adoption.</p>
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="gemini-tool max-w-4xl mx-auto">
+                <h3 class="text-2xl font-bold text-center text-blue-900 mb-4">✨ Practice Your Framing</h3>
+                <p class="text-gray-600 text-center mb-6">
+                    Let's practice Play 4. Describe a new AI feature you're introducing (e.g., "AI to auto-sort support tickets"). We'll help you reframe it to be human-centric, focusing on the *benefit* for your team.
+                </p>
+                <div class="space-y-4">
+                    <textarea id="feature-description" class="gemini-textarea" rows="3" placeholder="Describe the technical feature here..."></textarea>
+                    <button id="reframe-btn" class="gemini-button w-full md:w-auto">
+                        ✨ Reframe for My Team
+                    </button>
+                    <div id="gemini-loading" class="hidden text-center p-4">
+                        <div class="spinner"></div>
+                        <p class="text-sm text-gray-500 mt-2">Thinking...</p>
+                    </div>
+                    <div id="gemini-output" class="hidden"></div>
+                </div>
+            </div>
+            
+        </section>
+
+        <section id="roadmap" class="pt-20 pb-16 bg-blue-50/50 rounded-lg my-12">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Your 90-Day AI Integration Roadmap</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 text-center mb-12">
+                Here is an actionable, step-by-step plan to get started. This isn't about boiling the ocean; it's about creating momentum. Click each phase to see the specific actions and key performance indicators (KPIs) for your SME.
+            </p>
+            <div id="roadmap-container">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div class="phase-box active" data-phase="discover">
+                        <h3 class="text-xl font-semibold text-blue-800">Phase 1: Discover</h3>
+                        <p class="font-medium text-gray-600">(Days 1-30)</p>
+                    </div>
+                    <div class="phase-box" data-phase="pilot">
+                        <h3 class="text-xl font-semibold text-blue-800">Phase 2: Pilot</h3>
+                        <p class="font-medium text-gray-600">(Days 31-60)</p>
+                    </div>
+                    <div class="phase-box" data-phase="scale">
+                        <h3 class="text-xl font-semibold text-blue-800">Phase 3: Scale</h3>
+                        <p class="font-medium text-gray-600">(Days 61-90)</p>
+                    </div>
+                </div>
+                
+                <div id="roadmap-details" class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 min-h-[200px]">
+                    
+                </div>
+            </div>
+        </section>
+
+        <section id="case-studies" class="pt-20 pb-20">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">See It in Action: Real-World SME Success</h2>
+            <p class="max-w-3xl mx-auto text-lg text-gray-600 text-center mb-12">
+                Explore how SMEs like yours are already winning with a human-centric AI approach. These aren't tech giants; they are businesses that focused on their people first. Click each tab to see their story.
+            </p>
+            <div class="max-w-4xl mx-auto">
+                <div class="border-b border-gray-300 mb-6">
+                    <nav class="-mb-px flex space-x-6" id="tabs-container">
+                        <button class="tab-btn active" data-tab="metalworks">MetalWorks Inc.</button>
+                        <button class="tab-btn" data-tab="restaurant">Restaurant XYZ</button>
+                        <button class="tab-btn" data-tab="retail">Local Retail Co.</button>
+                    </nav>
+                </div>
+                
+                <div id="tab-content-container" class="bg-white p-6 rounded-lg shadow-lg border border-gray-200 min-h-[300px]">
+                    
+                </div>
+            </div>
+        </section>
+        
+    </main>
+    
+    <footer class="bg-blue-900 text-blue-100 mt-20 py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="font-semibold text-lg">Prepared for Lisa Galea, BSc. & Aimegos</p>
+            <p class="mt-2 text-sm text-blue-200">This interactive report provides strategic insights to empower SME/SMB leaders with AI tools and leadership training. Our mission is to help you unleash your potential and redefine what's possible by focusing on the human side of technology.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            const navLinks = document.querySelectorAll('#nav-menu a, #mobile-menu a');
+            const sections = document.querySelectorAll('section');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const id = entry.target.getAttribute('id');
+                        navLinks.forEach(link => {
+                            link.classList.remove('active');
+                            if (link.getAttribute('href') === `#${id}`) {
+                                link.classList.add('active');
+                            }
+                        });
+                    }
+                });
+            }, { rootMargin: '-20% 0px -70% 0px' }); 
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.closest('#mobile-menu')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+            const riskBtn = document.getElementById('risk-btn');
+            const rewardBtn = document.getElementById('reward-btn');
+            const riskContent = document.getElementById('risk-content');
+            const rewardContent = document.getElementById('reward-content');
+
+            riskBtn.addEventListener('click', () => {
+                riskContent.classList.remove('hidden');
+                rewardContent.classList.add('hidden');
+                riskBtn.classList.add('opacity-100');
+                riskBtn.classList.remove('opacity-70');
+                rewardBtn.classList.add('opacity-70');
+            });
+
+            rewardBtn.addEventListener('click', () => {
+                rewardContent.classList.remove('hidden');
+                riskContent.classList.add('hidden');
+                rewardBtn.classList.add('opacity-100');
+                rewardBtn.classList.remove('opacity-70');
+                riskBtn.classList.add('opacity-70');
+            });
+            
+            rewardBtn.click();
+
+
+            const adoptionCtx = document.getElementById('adoptionChart').getContext('2d');
+            new Chart(adoptionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['SME', 'Large Enterprise'],
+                    datasets: [{
+                        label: 'Current AI Adoption',
+                        data: [25, 60],
+                        backgroundColor: ['rgba(59, 130, 246, 0.7)', 'rgba(16, 185, 129, 0.7)'],
+                        borderColor: ['rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw}% Adoption`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: { display: true, text: 'Adoption Rate (%)' }
+                        }
+                    }
+                }
+            });
+
+            document.getElementById('accordion-container').addEventListener('click', function(e) {
+                const header = e.target.closest('.accordion-header');
+                if (!header) return;
+                
+                const content = header.nextElementSibling;
+                const icon = header.querySelector('.accordion-icon');
+                
+                content.classList.toggle('hidden');
+                
+                if (content.classList.contains('hidden')) {
+                    icon.textContent = '+';
+                } else {
+                    icon.textContent = '−';
+                }
+            });
+
+            const roadmapContainer = document.getElementById('roadmap-container');
+            const roadmapDetails = document.getElementById('roadmap-details');
+            const phaseBoxes = roadmapContainer.querySelectorAll('.phase-box');
+            
+            const roadmapData = {
+                discover: {
+                    title: 'Phase 1: Discover (Days 1-30)',
+                    actions: [
+                        'Identify 1-2 critical business bottlenecks (e.g., customer service response time, invoice processing).',
+                        'Survey team on key pain points and readiness for new tools.',
+                        'Research 2-3 simple AI tools that directly address this bottleneck.'
+                    ],
+                    kpis: '1 high-impact use case identified and agreed upon.'
+                },
+                pilot: {
+                    title: 'Phase 2: Pilot (Days 31-60)',
+                    actions: [
+                        'Select ONE tool and implement it for a small, enthusiastic "pilot group" (3-5 people).',
+                        'Frame the tool as a "co-pilot" (Play 1) and provide clear, simple training.',
+                        'Gather weekly feedback: "What worked? What was frustrating? What did it help you do?"'
+                    ],
+                    kpis: '80% pilot team engagement; qualitative feedback captured.'
+                },
+                scale: {
+                    title: 'Phase 3: Scale (Days 61-90)',
+                    actions: [
+                        'Refine the tool/process based on pilot feedback.',
+                        'Develop training materials that include "social proof" from the pilot team (Play 4).',
+                        'Roll out to the wider team, department by department. Use "nudges" to encourage use (Play 3).'
+                    ],
+                    kpis: '20% improvement in the target bottleneck metric; 70%+ team adoption rate.'
+                }
+            };
+
+            function updateRoadmapDetails(phase) {
+                const data = roadmapData[phase];
+                roadmapDetails.innerHTML = `
+                    <h4 class="text-xl font-semibold text-blue-800 mb-4">${data.title}</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h5 class="font-semibold text-gray-700 mb-2">Key Actions:</h5>
+                            <ul class="list-disc list-inside space-y-2 text-gray-600">
+                                ${data.actions.map(action => `<li>${action}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <h5 class="font-semibold text-blue-800 mb-2">Key Performance Indicator (KPI):</h5>
+                            <p class="text-blue-700 font-medium">${data.kpis}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            roadmapContainer.addEventListener('click', function(e) {
+                const phaseBox = e.target.closest('.phase-box');
+                if (!phaseBox) return;
+                
+                phaseBoxes.forEach(box => box.classList.remove('active'));
+                phaseBox.classList.add('active');
+                
+                updateRoadmapDetails(phaseBox.dataset.phase);
+            });
+            
+            updateRoadmapDetails('discover');
+
+            const tabsContainer = document.getElementById('tabs-container');
+            const tabContentContainer = document.getElementById('tab-content-container');
+            const tabButtons = tabsContainer.querySelectorAll('.tab-btn');
+            
+            const caseStudiesData = {
+                metalworks: {
+                    title: 'MetalWorks Inc. (Manufacturing)',
+                    challenge: 'Frequent, costly, and unpredictable machine downtime was halting production.',
+                    solution: 'Implemented a simple AI predictive maintenance tool. Critically, it was framed as a "Machine Health Assistant" for technicians, sending alerts like "Machine 4 seems tired, suggest checking coolant levels."',
+                    outcome: '25% reduction in unplanned downtime; 40% higher adoption rate compared to a previous "monitoring system" trial.',
+                    insight: '<span class="font-semibold text-emerald-700">The Co-Pilot Frame (Play 1)</span> turned technicians from skeptics into advocates. The AI wasn\'t "watching" them; it was *helping* them.'
+                },
+                restaurant: {
+                    title: 'Restaurant XYZ (Hospitality)',
+                    challenge: 'High volume of simple customer queries (hours, reservations) was overwhelming staff during peak hours.',
+                    solution: 'Integrated an AI chatbot on their website. It was programmed with a friendly, helpful personality and given a name ("Aimego"), clearly stating it was an AI assistant.',
+                    outcome: '60% reduction in phone calls for simple queries; 20% increase in online reservations attributed to the bot\'s efficiency.',
+                    insight: '<span class="font-semibold text-emerald-700">Transparency & Personality (Play 2)</span> built trust. Customers weren\'t "tricked." They knew it was a bot, but its helpfulness and clear framing made them happy to use it.'
+                },
+                retail: {
+                    title: 'Local Retail Co. (E-commerce)',
+                    challenge: 'New e-commerce site launch failed to convert, and the team was unsure which products to promote.',
+                    solution: 'Used an AI tool to analyze customer journey data. It provided "nudges" to the marketing team, e.g., "Customers who buy [Product A] often need [Product B]. Suggest bundling them."',
+                    outcome: '30% increase in average order value; marketing team reported higher confidence in their campaign decisions.',
+                    insight: '<span class="font-semibold text-emerald-700">Behavioural Nudges (Play 3)</span> made the data actionable. Instead of a complex dashboard, the AI provided simple, timely, and effective recommendations, making it easy to adopt.'
+                }
+            };
+            
+            function updateTabContent(tab) {
+                const data = caseStudiesData[tab];
+                tabContentContainer.innerHTML = `
+                    <h4 class="text-xl font-semibold text-blue-800 mb-3">${data.title}</h4>
+                    <p class="mb-4"><span class="font-semibold text-gray-700">The Challenge:</span> ${data.challenge}</p>
+                    <p class="mb-4"><span class="font-semibold text-gray-700">The Human-Centric Solution:</span> ${data.solution}</p>
+                    <p class="mb-4"><span class="font-semibold text-gray-700">The Outcome:</span> ${data.outcome}</p>
+                    <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 rounded-r-lg">
+                        <p><span class="font-semibold text-emerald-800">Key Behavioural Insight:</span> ${data.insight}</p>
+                    </div>
+                `;
+            }
+            
+            tabsContainer.addEventListener('click', function(e) {
+                const tabButton = e.target.closest('.tab-btn');
+                if (!tabButton) return;
+                
+                tabButtons.forEach(btn => btn.classList.remove('active'));
+                tabButton.classList.add('active');
+                
+                updateTabContent(tabButton.dataset.tab);
+            });
+            
+            updateTabContent('metalworks');
+            
+            
+            const reframeBtn = document.getElementById('reframe-btn');
+            const featureDescription = document.getElementById('feature-description');
+            const geminiLoading = document.getElementById('gemini-loading');
+            const geminiOutput = document.getElementById('gemini-output');
+
+            async function fetchWithBackoff(apiUrl, payload, maxRetries = 3) {
+                let delay = 1000;
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            return await response.json();
+                        } else if (response.status === 429 || response.status >= 500) {
+                            await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                        } else {
+                            throw new Error(`API request failed with status ${response.status}`);
+                        }
+                    } catch (error) {
+                        if (i === maxRetries - 1) throw error; 
+                        await new Promise(resolve => setTimeout(resolve, delay * Math.pow(2, i)));
+                    }
+                }
+                throw new Error('API request failed after all retries');
+            }
+
+            async function getGeminiFraming(description) {
+                const apiKey = ""; 
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+
+                const systemPrompt = "You are an expert copywriter and behavioural consultant, following the principles of the 'Human Side of AI' report. A user will describe a technical AI feature. Your job is to rewrite that description into a human-centric announcement for their team. Focus on the *human benefit* and *value*, not the technical features. Use the 'Co-Pilot' frame (Play 1) and 'Framing' (Play 4) principles. Make it sound supportive, collaborative, and non-threatening. Keep it to one concise paragraph.";
+
+                const payload = {
+                    contents: [{ parts: [{ text: description }] }],
+                    systemInstruction: {
+                        parts: [{ text: systemPrompt }]
+                    },
+                };
+
+                const result = await fetchWithBackoff(apiUrl, payload);
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    return candidate.content.parts[0].text;
+                } else {
+                    console.error("Invalid response from API:", result);
+                    throw new Error("Invalid response from API");
+                }
+            }
+
+            reframeBtn.addEventListener('click', async () => {
+                const description = featureDescription.value;
+                if (!description.trim()) {
+                    geminiOutput.innerHTML = `<div class="gemini-error">Please enter a description first.</div>`;
+                    geminiOutput.classList.remove('hidden');
+                    return;
+                }
+
+                reframeBtn.disabled = true;
+                geminiLoading.classList.remove('hidden');
+                geminiOutput.classList.add('hidden');
+                geminiOutput.innerHTML = '';
+
+                try {
+                    const reframedText = await getGeminiFraming(description);
+                    geminiOutput.innerHTML = `<div class="gemini-result"><p>${reframedText.replace(/\n/g, '<br>')}</p></div>`;
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    geminiOutput.innerHTML = `<div class="gemini-error">Sorry, I couldn't generate a suggestion right now. Please try again.</div>`;
+                } finally {
+                    reframeBtn.disabled = false;
+                    geminiLoading.classList.add('hidden');
+                    geminiOutput.classList.remove('hidden');
+                }
+            });
+
+        });
+    </script>
+</body>
+</html>
+
